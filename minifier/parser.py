@@ -31,13 +31,13 @@ def _load_yaml_or_json(text: str) -> Dict[str, Any]:
 
 class OpenAPIParser:
     """OpenAPI/Swagger parser for loading and navigating specs."""
-    def __init__(self, doc: Dict[str, Any]):
+    def __init__(self, doc: Dict[str, Any] = {}):
         self.doc = doc
         self.version = self._detect_version()
 
     # ---------- Construction ----------
     @staticmethod
-    def load(path: str) -> "OpenAPIParser":
+    def load_spec(path: str) -> "OpenAPIParser":
         with open(path, "r", encoding="utf-8") as f:
             text = f.read()
         data = _load_yaml_or_json(text)
@@ -138,28 +138,29 @@ class OpenAPIParser:
 
 # ---------- Minimal usage example ----------
 if __name__ == "__main__":
-    parser = OpenAPIParser.load("../examples/complex-spec.yaml")
+    parser = OpenAPIParser()
+    spec = parser.load_spec("../examples/complex-spec.yaml")
 
-    print("Version:", parser.version)
-    print("Servers:", parser.servers())
+    print("Version:", spec.version)
+    print("Servers:", spec.servers())
 
     print("\nOperations:")
-    for op in parser.list_operations():
+    for op in spec.list_operations():
         print(f"  {op.method.upper():6} {op.path:40}  id={op.operation_id!s:20}  tags={op.tags}")
 
     print("\nSchemas:")
-    for name in parser.list_schemas().keys():
+    for name in spec.list_schemas().keys():
         print("  -", name)
 
     print("\nSecurity Schemes:")
-    for name in parser.list_security_schemes().keys():
+    for name in spec.list_security_schemes().keys():
         print("  -", name)
 
     # Show request/response refs for the first operation (demo)
-    ops = parser.list_operations()
+    ops = spec.list_operations()
     if ops:
         first = ops[0]
-        op_node = parser.paths()[first.path][first.method]
+        op_node = spec.paths()[first.path][first.method]
         print(f"\nFirst operation: {first.method.upper()} {first.path}")
-        print("  Request body $refs:", parser.op_request_body_schema_refs(op_node))
-        print("  Response $refs:", parser.op_response_schema_refs(op_node))
+        print("  Request body $refs:", spec.op_request_body_schema_refs(op_node))
+        print("  Response $refs:", spec.op_response_schema_refs(op_node))

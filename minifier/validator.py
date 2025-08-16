@@ -1,7 +1,11 @@
 from __future__ import annotations
 from typing import Any, Dict, List, Set, Tuple
 import re
-from parser import OpenAPIParser
+try:
+    from .parser import OpenAPIParser
+except ImportError:  # pragma: no cover
+    from parser import OpenAPIParser  # type: ignore
+
 
 HTTP_METHODS = {"get","put","post","delete","options","head","patch","trace"}
 
